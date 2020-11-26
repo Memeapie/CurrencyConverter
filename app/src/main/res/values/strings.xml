@@ -1,0 +1,25 @@
+<resources>
+    <string name="app_name">Currency Converter</string>
+    <string name="tab_text_1">Home</string>
+    <string name="tab_text_2">Converter</string>
+    <string name="tab_text_3">Historical</string>
+    <string name="splash">Welcome to the Currency Converter</string>
+    <string name="splash_info">Use the tabs at the top of the page to convert currency between different current market values or look at historical data for particular markets under the last tab</string>
+    <string-array name="currencies_eng">
+        <item>British Pounds</item>
+        <item>American Dollars</item>
+        <item>Canadian Dollars</item>
+        <item>Australian Dollars</item>
+        <item>Euros</item>
+    </string-array>
+    <string name="to">to</string>
+    <string name="convert">Convert</string>
+    <string name="from">from</string>
+    <string name="amount">Amount (e.g. 500)</string>
+    <string name="convert_currency">Convert Currency</string>
+    <string name="USD">USD</string>
+    <string name="GBP">GBP</string>
+    <string name="AUD">AUD</string>
+    <string name="CAD">CAD</string>
+    <string name="EUR">EUR</string>
+</resources>
