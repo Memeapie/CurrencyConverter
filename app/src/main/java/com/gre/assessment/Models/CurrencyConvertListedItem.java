@@ -1,5 +1,7 @@
 package com.gre.assessment.Models;
 
+import java.util.Date;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -13,6 +15,6 @@ public class CurrencyConvertListedItem {
 
     private Double fromRate;
     private Double toRate;
-    private String date;
+    private Date date;
 
 }

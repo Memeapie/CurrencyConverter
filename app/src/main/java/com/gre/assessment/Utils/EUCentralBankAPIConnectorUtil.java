@@ -7,6 +7,8 @@ import com.gre.assessment.Models.CurrencyConvert;
 import com.gre.assessment.Models.CurrencyConvertListedItem;
 import com.gre.assessment.Models.CurrencyHistory;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -16,6 +18,7 @@ import java.util.concurrent.ExecutionException;
 public class EUCentralBankAPIConnectorUtil {
 
     private static final ObjectMapper mapper = new ObjectMapper();
+    private static final SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd");
 
     public CurrencyConvert getLatestExchangeRate(String fromCurrency, String toCurrency) {
         ASyncHttpsTask task = new ASyncHttpsTask();
@@ -58,7 +61,7 @@ public class EUCentralBankAPIConnectorUtil {
                 final CurrencyConvertListedItem currencyConvert = CurrencyConvertListedItem.builder()
                         .fromRate(Double.valueOf(localNode.getValue().get(CountryCodeUtil.nameToCC(fromCurrency)).asText()))
                         .toRate(Double.valueOf(localNode.getValue().get(CountryCodeUtil.nameToCC(toCurrency)).asText()))
-                        .date(localNode.getKey())
+                        .date(dateFormatter.parse(localNode.getKey()))
                         .build();
                 rates.add(currencyConvert);
             }
@@ -75,6 +78,8 @@ public class EUCentralBankAPIConnectorUtil {
             return new CurrencyHistory("IO Error when Connecting to EU CB API");
         } catch (JsonProcessingException e) {
             return new CurrencyHistory("Error when Reading Response from EU CB API");
+        } catch (ParseException e) {
+            return new CurrencyHistory("Date Returned from API was not able to be Converted");
         }
     }
 }

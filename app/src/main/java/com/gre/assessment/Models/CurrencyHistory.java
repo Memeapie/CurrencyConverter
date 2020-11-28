@@ -28,5 +28,4 @@ public class CurrencyHistory extends IOErrorReadOut {
         super();
         this.setErrorOut(error);
     }
-
 }

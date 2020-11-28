@@ -14,6 +14,7 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
 import com.github.mikephil.charting.charts.LineChart;
+import com.github.mikephil.charting.components.LimitLine;
 import com.github.mikephil.charting.components.XAxis;
 import com.github.mikephil.charting.components.YAxis;
 import com.github.mikephil.charting.data.Entry;
@@ -25,17 +26,23 @@ import com.google.android.material.snackbar.Snackbar;
 import com.gre.assessment.Models.CurrencyConvertListedItem;
 import com.gre.assessment.Models.CurrencyHistory;
 import com.gre.assessment.R;
+import com.gre.assessment.Utils.DateComparator;
 import com.gre.assessment.Utils.EUCentralBankAPIConnectorUtil;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
 public class Historical extends Fragment {
 
+    private final static DateComparator dateComparator = new DateComparator();
+
     private LineChart chart;
+    private float minChart;
+    private float maxChart;
 
     @Override
     public View onCreateView(LayoutInflater inflater, final ViewGroup container,
@@ -84,27 +91,52 @@ public class Historical extends Fragment {
 
     public void renderData(CurrencyHistory currencyHistory) {
 
-        // Data Set
+        // Data Values
         ArrayList<Entry> values = new ArrayList<>();
-        List<CurrencyConvertListedItem> data = currencyHistory.getCurrencyRates();
-
-        for (int x = 0; x < data.size(); x++){
-            values.add(new Entry(9, 190));
+        List<CurrencyConvertListedItem> sortedCurrency = currencyHistory.getCurrencyRates();
+        Collections.sort(sortedCurrency, dateComparator);
+        minChart = sortedCurrency.get(0).getToRate().floatValue();
+        maxChart = sortedCurrency.get(0).getToRate().floatValue();
+        for (int x = 0; x < sortedCurrency.size(); x++){
+            values.add(new Entry(x, sortedCurrency.get(x).getToRate().floatValue()));
+            if (sortedCurrency.get(x).getToRate().floatValue() < minChart){
+                minChart = sortedCurrency.get(x).getToRate().floatValue();
+            } else if (sortedCurrency.get(x).getToRate().floatValue() > maxChart){
+                maxChart = sortedCurrency.get(x).getToRate().floatValue();
+            }
         }
 
-        // Left Axis
+        LimitLine llXAxis = new LimitLine(10f, "Index 10");
+        llXAxis.setLineWidth(4f);
+        llXAxis.enableDashedLine(10f, 10f, 0f);
+        llXAxis.setLabelPosition(LimitLine.LimitLabelPosition.RIGHT_BOTTOM);
+        llXAxis.setTextSize(10f);
+
         XAxis xAxis = chart.getXAxis();
         xAxis.enableGridDashedLine(10f, 10f, 0f);
-        xAxis.setAxisMaximum(data.size());
+        xAxis.setAxisMaximum(sortedCurrency.size());
         xAxis.setAxisMinimum(0f);
         xAxis.setDrawLimitLinesBehindData(true);
 
-        // Top Axis
+        LimitLine ll1 = new LimitLine(maxChart, "Maximum Limit");
+        ll1.setLineWidth(2f);
+        ll1.enableDashedLine(10f, 10f, 0f);
+        ll1.setLabelPosition(LimitLine.LimitLabelPosition.RIGHT_TOP);
+        ll1.setTextSize(10f);
+
+        LimitLine ll2 = new LimitLine(minChart, "Minimum Limit");
+        ll2.setLineWidth(2f);
+        ll2.enableDashedLine(10f, 10f, 0f);
+        ll2.setLabelPosition(LimitLine.LimitLabelPosition.RIGHT_BOTTOM);
+        ll2.setTextSize(10f);
+
         YAxis leftAxis = chart.getAxisLeft();
         leftAxis.removeAllLimitLines();
-        leftAxis.setAxisMaximum(2.5f);
-        leftAxis.setAxisMinimum(0.5f);
-        leftAxis.enableGridDashedLine(10f, 0.5f, 0f);
+        leftAxis.addLimitLine(ll1);
+        leftAxis.addLimitLine(ll2);
+        leftAxis.setAxisMaximum(maxChart+0.5f);
+        leftAxis.setAxisMinimum(minChart-0.5f);
+        leftAxis.enableGridDashedLine(10f, 10f, 0f);
         leftAxis.setDrawZeroLine(false);
         leftAxis.setDrawLimitLinesBehindData(false);
         chart.getAxisRight().setEnabled(false);
@@ -140,9 +172,8 @@ public class Historical extends Fragment {
             }
             ArrayList<ILineDataSet> dataSets = new ArrayList<>();
             dataSets.add(set1);
-            LineData lineData = new LineData(dataSets);
-            chart.setData(lineData);
+            LineData data = new LineData(dataSets);
+            chart.setData(data);
         }
     }
-
 }
