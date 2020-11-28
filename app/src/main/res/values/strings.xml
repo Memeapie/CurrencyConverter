@@ -17,6 +17,12 @@
     <string name="from">from</string>
     <string name="amount">Amount (e.g. 500)</string>
     <string name="convert_currency">Convert Currency</string>
+    <string name="convert_currency_historical">Conversion Rate History</string>
+    <string name="time_period">time period</string>
+    <string name="two_years">Two Years</string>
+    <string name="one_year">One Year</string>
+    <string name="six_months">Six Months</string>
+    <string name="one_month">One Month</string>
     <string name="USD">USD</string>
     <string name="GBP">GBP</string>
     <string name="AUD">AUD</string>

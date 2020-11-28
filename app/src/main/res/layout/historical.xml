@@ -5,14 +5,68 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+    <Button
+        android:id="@+id/timePeriodButton2yr"
+        android:layout_width="63dp"
+        android:layout_height="48dp"
+        android:layout_marginStart="22dp"
+        android:text="@string/two_years"
+        android:textAllCaps="false"
+        android:textSize="12sp"
+        app:layout_constraintStart_toEndOf="@+id/textViewConvertHistoricalFrom3"
+        app:layout_constraintTop_toBottomOf="@+id/spinnerToHistorical" />
+
+    <Button
+        android:id="@+id/timePeriodButton1mnth"
+        android:layout_width="63dp"
+        android:layout_height="48dp"
+        android:text="@string/one_month"
+        android:textAllCaps="false"
+        android:textSize="12sp"
+        app:layout_constraintStart_toEndOf="@+id/timePeriodButton6mth"
+        app:layout_constraintTop_toBottomOf="@+id/spinnerToHistorical" />
+
+    <Button
+        android:id="@+id/timePeriodButton6mth"
+        android:layout_width="63dp"
+        android:layout_height="48dp"
+        android:text="@string/six_months"
+        android:textAllCaps="false"
+        android:textSize="12sp"
+        app:layout_constraintStart_toEndOf="@+id/timePeriodButton1yr"
+        app:layout_constraintTop_toBottomOf="@+id/spinnerToHistorical" />
+
+    <Button
+        android:id="@+id/timePeriodButton1yr"
+        android:layout_width="63dp"
+        android:layout_height="48dp"
+        android:text="@string/one_year"
+        android:textAllCaps="false"
+        android:textSize="12sp"
+        app:layout_constraintStart_toEndOf="@+id/timePeriodButton2yr"
+        app:layout_constraintTop_toBottomOf="@+id/spinnerToHistorical" />
+
+    <TextView
+        android:id="@+id/textViewConvertHistoricalFrom3"
+        android:layout_width="100dp"
+        android:layout_height="29dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:text="@string/time_period"
+        android:textAlignment="textEnd"
+        android:textSize="18sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textViewConvertHistoricalFrom2" />
+
     <Spinner
         android:id="@+id/spinnerToHistorical"
         android:layout_width="249dp"
         android:layout_height="30dp"
-        android:layout_marginTop="12dp"
+        android:layout_marginStart="130dp"
+        android:layout_marginEnd="5dp"
         android:entries="@array/currencies_eng"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.82"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/spinnerFromHistorical" />
 
@@ -20,34 +74,60 @@
         android:id="@+id/spinnerFromHistorical"
         android:layout_width="249dp"
         android:layout_height="30dp"
-        android:layout_marginTop="20dp"
+        android:layout_marginStart="130dp"
+        android:layout_marginTop="10dp"
+        android:layout_marginEnd="5dp"
         android:entries="@array/currencies_eng"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.82"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toBottomOf="@+id/textViewConvertHistorical" />
 
     <com.github.mikephil.charting.charts.LineChart
         android:id="@+id/historicalDataChart"
-        android:layout_width="388dp"
+        android:layout_width="392dp"
         android:layout_height="452dp"
         android:layout_marginStart="5dp"
-        android:layout_marginTop="124dp"
+        android:layout_marginTop="160dp"
         android:layout_marginEnd="5dp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.454"
+        app:layout_constraintHorizontal_bias="0.461"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <Button
-        android:id="@+id/refreshButton"
+    <TextView
+        android:id="@+id/textViewConvertHistorical"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="32dp"
-        android:text="Refresh"
+        android:layout_marginTop="10dp"
+        android:text="@string/convert_currency_historical"
+        android:textSize="24sp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.092"
+        app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/textViewConvertHistoricalFrom"
+        android:layout_width="58dp"
+        android:layout_height="30dp"
+        android:layout_marginStart="48dp"
+        android:layout_marginTop="13dp"
+        android:text="@string/from"
+        android:textAlignment="textEnd"
+        android:textSize="18sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textViewConvertHistorical" />
+
+    <TextView
+        android:id="@+id/textViewConvertHistoricalFrom2"
+        android:layout_width="60dp"
+        android:layout_height="31dp"
+        android:layout_marginStart="46dp"
+        android:text="@string/to"
+        android:textAlignment="textEnd"
+        android:textSize="18sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textViewConvertHistoricalFrom" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

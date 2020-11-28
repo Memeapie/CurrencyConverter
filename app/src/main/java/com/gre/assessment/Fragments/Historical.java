@@ -14,6 +14,7 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
 import com.github.mikephil.charting.charts.LineChart;
+import com.github.mikephil.charting.components.Description;
 import com.github.mikephil.charting.components.LimitLine;
 import com.github.mikephil.charting.components.XAxis;
 import com.github.mikephil.charting.components.YAxis;
@@ -29,6 +30,7 @@ import com.gre.assessment.R;
 import com.gre.assessment.Utils.DateComparator;
 import com.gre.assessment.Utils.EUCentralBankAPIConnectorUtil;
 
+import java.text.DecimalFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -38,55 +40,86 @@ import java.util.Optional;
 
 public class Historical extends Fragment {
 
-    private final static DateComparator dateComparator = new DateComparator();
+    private static final DateComparator dateComparator = new DateComparator();
+    private static final DecimalFormat decimalFormatter = new DecimalFormat("0.00");
+    private static final EUCentralBankAPIConnectorUtil connectorUtil = new EUCentralBankAPIConnectorUtil();
+    private static final LocalDateTime dateTimeNow = LocalDateTime.now();
 
     private LineChart chart;
-    private float minChart;
-    private float maxChart;
+    private Spinner fromCurrency;
+    private Spinner toCurrency;
+    private View view;
 
     @Override
-    public View onCreateView(LayoutInflater inflater, final ViewGroup container,
-                             Bundle savedInstanceState) {
-        final View view = inflater.inflate(R.layout.historical, container, false);
-        final EUCentralBankAPIConnectorUtil connectorUtil = new EUCentralBankAPIConnectorUtil();
+    public View onCreateView(LayoutInflater inflater, final ViewGroup container, Bundle savedInstanceState) {
+        view = inflater.inflate(R.layout.historical, container, false);
 
-        final Button refreshHistorical = view.findViewById(R.id.refreshButton);
+        fromCurrency = view.findViewById(R.id.spinnerFromHistorical);
+        toCurrency = view.findViewById(R.id.spinnerToHistorical);
 
-        final Spinner fromCurrency = view.findViewById(R.id.spinnerFromHistorical);
-        final Spinner toCurrency = view.findViewById(R.id.spinnerToHistorical);
+        Button twoYearsHistory = view.findViewById(R.id.timePeriodButton2yr);
+        Button oneYearHistory = view.findViewById(R.id.timePeriodButton1yr);
+        Button sixMonthsHistory = view.findViewById(R.id.timePeriodButton6mth);
+        Button oneMonthHistory = view.findViewById(R.id.timePeriodButton1mnth);
 
         chart = view.findViewById(R.id.historicalDataChart);
         chart.setTouchEnabled(true);
         chart.setPinchZoom(true);
 
-        refreshHistorical.setOnClickListener(new View.OnClickListener(){
+        twoYearsHistory.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (fromCurrency.getSelectedItem() == toCurrency.getSelectedItem()){
-                    Snackbar.make(view, "Converting Currencies are the same!", Snackbar.LENGTH_LONG)
-                            .setAction("Action", null).show();
-                } else {
-                    final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-                    final LocalDateTime dateTimeNow = LocalDateTime.now();
-
-                    CurrencyHistory currencyHistory = connectorUtil.getHistoricalExchangeRate(
-                            dateTimeFormatter.format(dateTimeNow.minusYears(1)),
-                            dateTimeFormatter.format(dateTimeNow),
-                            fromCurrency.getSelectedItem().toString(),
-                            toCurrency.getSelectedItem().toString()
-                    );
-
-                    Optional<String> errorOut = Optional.ofNullable(currencyHistory.getErrorOut());
-                    if (errorOut.isPresent()){
-                        Snackbar.make(view, errorOut.get(), Snackbar.LENGTH_LONG)
-                                .setAction("Action", null).show();
-                    } else {
-                        renderData(currencyHistory);
-                    }
-                }
+                updateData(dateTimeNow.minusYears(2));
             }
         });
+
+        oneYearHistory.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                updateData(dateTimeNow.minusYears(1));
+            }
+        });
+
+        sixMonthsHistory.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                updateData(dateTimeNow.minusMonths(6));
+            }
+        });
+
+        oneMonthHistory.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                updateData(dateTimeNow.minusMonths(1));
+            }
+        });
+
         return view;
+    }
+
+
+    public void updateData(LocalDateTime endDate) {
+        if (fromCurrency.getSelectedItem() == toCurrency.getSelectedItem()){
+            Snackbar.make(view, "Converting Currencies are the same!", Snackbar.LENGTH_LONG)
+                    .setAction("Action", null).show();
+        } else {
+            final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
+            CurrencyHistory currencyHistory = connectorUtil.getHistoricalExchangeRate(
+                    dateTimeFormatter.format(endDate),
+                    dateTimeFormatter.format(dateTimeNow),
+                    fromCurrency.getSelectedItem().toString(),
+                    toCurrency.getSelectedItem().toString()
+            );
+
+            Optional<String> errorOut = Optional.ofNullable(currencyHistory.getErrorOut());
+            if (errorOut.isPresent()){
+                Snackbar.make(view, errorOut.get(), Snackbar.LENGTH_LONG)
+                        .setAction("Action", null).show();
+            } else {
+                renderData(currencyHistory);
+            }
+        }
     }
 
     public void renderData(CurrencyHistory currencyHistory) {
@@ -95,8 +128,8 @@ public class Historical extends Fragment {
         ArrayList<Entry> values = new ArrayList<>();
         List<CurrencyConvertListedItem> sortedCurrency = currencyHistory.getCurrencyRates();
         Collections.sort(sortedCurrency, dateComparator);
-        minChart = sortedCurrency.get(0).getToRate().floatValue();
-        maxChart = sortedCurrency.get(0).getToRate().floatValue();
+        float minChart = sortedCurrency.get(0).getToRate().floatValue();
+        float maxChart = sortedCurrency.get(0).getToRate().floatValue();
         for (int x = 0; x < sortedCurrency.size(); x++){
             values.add(new Entry(x, sortedCurrency.get(x).getToRate().floatValue()));
             if (sortedCurrency.get(x).getToRate().floatValue() < minChart){
@@ -116,64 +149,59 @@ public class Historical extends Fragment {
         xAxis.enableGridDashedLine(10f, 10f, 0f);
         xAxis.setAxisMaximum(sortedCurrency.size());
         xAxis.setAxisMinimum(0f);
+        xAxis.setDrawLabels(false);
         xAxis.setDrawLimitLinesBehindData(true);
 
-        LimitLine ll1 = new LimitLine(maxChart, "Maximum Limit");
-        ll1.setLineWidth(2f);
-        ll1.enableDashedLine(10f, 10f, 0f);
-        ll1.setLabelPosition(LimitLine.LimitLabelPosition.RIGHT_TOP);
-        ll1.setTextSize(10f);
+        LimitLine limitLineMax = new LimitLine(maxChart, "Maximum: " + decimalFormatter.format(maxChart));
+        limitLineMax.setLineWidth(2f);
+        limitLineMax.enableDashedLine(10f, 10f, 0f);
+        limitLineMax.setLabelPosition(LimitLine.LimitLabelPosition.RIGHT_TOP);
+        limitLineMax.setTextSize(10f);
 
-        LimitLine ll2 = new LimitLine(minChart, "Minimum Limit");
-        ll2.setLineWidth(2f);
-        ll2.enableDashedLine(10f, 10f, 0f);
-        ll2.setLabelPosition(LimitLine.LimitLabelPosition.RIGHT_BOTTOM);
-        ll2.setTextSize(10f);
+        LimitLine limitLineMin = new LimitLine(minChart, "Minimum: " + decimalFormatter.format(minChart));
+        limitLineMin.setLineWidth(2f);
+        limitLineMin.enableDashedLine(10f, 10f, 0f);
+        limitLineMin.setLabelPosition(LimitLine.LimitLabelPosition.RIGHT_BOTTOM);
+        limitLineMin.setTextSize(10f);
 
         YAxis leftAxis = chart.getAxisLeft();
         leftAxis.removeAllLimitLines();
-        leftAxis.addLimitLine(ll1);
-        leftAxis.addLimitLine(ll2);
-        leftAxis.setAxisMaximum(maxChart+0.5f);
-        leftAxis.setAxisMinimum(minChart-0.5f);
+        leftAxis.addLimitLine(limitLineMax);
+        leftAxis.addLimitLine(limitLineMin);
+        leftAxis.setAxisMaximum(maxChart +0.1f);
+        leftAxis.setAxisMinimum(minChart -0.1f);
         leftAxis.enableGridDashedLine(10f, 10f, 0f);
         leftAxis.setDrawZeroLine(false);
         leftAxis.setDrawLimitLinesBehindData(false);
         chart.getAxisRight().setEnabled(false);
 
-        LineDataSet set1;
-        if (chart.getData() != null &&
-                chart.getData().getDataSetCount() > 0) {
-            set1 = (LineDataSet) chart.getData().getDataSetByIndex(0);
-            set1.setValues(values);
-            chart.getData().notifyDataChanged();
-            chart.notifyDataSetChanged();
-        } else {
-            set1 = new LineDataSet(values, "Sample Data");
-            set1.setDrawIcons(false);
-            set1.enableDashedLine(10f, 5f, 0f);
-            set1.enableDashedHighlightLine(10f, 5f, 0f);
-            set1.setColor(Color.DKGRAY);
-            set1.setCircleColor(Color.DKGRAY);
-            set1.setLineWidth(1f);
-            set1.setCircleRadius(3f);
-            set1.setDrawCircleHole(false);
-            set1.setValueTextSize(9f);
-            set1.setDrawFilled(true);
-            set1.setFormLineWidth(1f);
-            set1.setFormLineDashEffect(new DashPathEffect(new float[]{10f, 5f}, 0f));
-            set1.setFormSize(15.f);
+        LineDataSet currencyDataSet;
+        currencyDataSet = new LineDataSet(values, "Conversion Rate for " + currencyHistory.getFromCurrencyCode() + " to " + currencyHistory.getToCurrencyCode());
+        currencyDataSet.setDrawIcons(false);
+        currencyDataSet.enableDashedLine(10f, 5f, 0f);
+        currencyDataSet.enableDashedHighlightLine(10f, 5f, 0f);
+        currencyDataSet.setColor(Color.DKGRAY);
+        currencyDataSet.setCircleColor(Color.DKGRAY);
+        currencyDataSet.setLineWidth(1f);
+        currencyDataSet.setDrawCircles(false);
+        currencyDataSet.setValueTextSize(9f);
+        currencyDataSet.setDrawFilled(true);
+        currencyDataSet.setFormLineWidth(2f);
+        currencyDataSet.setFormLineDashEffect(new DashPathEffect(new float[]{10f, 5f}, 0f));
+        currencyDataSet.setFormSize(15.f);
 
-            if (Utils.getSDKInt() >= 18) {
-                Drawable drawable = ContextCompat.getDrawable(this.getContext(), R.drawable.fade_blue);
-                set1.setFillDrawable(drawable);
-            } else {
-                set1.setFillColor(Color.DKGRAY);
-            }
-            ArrayList<ILineDataSet> dataSets = new ArrayList<>();
-            dataSets.add(set1);
-            LineData data = new LineData(dataSets);
-            chart.setData(data);
+        Description des = chart.getDescription();
+        des.setEnabled(false);
+
+        if (Utils.getSDKInt() >= 18) {
+            Drawable drawable = ContextCompat.getDrawable(this.getContext(), R.drawable.fade_blue);
+            currencyDataSet.setFillDrawable(drawable);
+        } else {
+            currencyDataSet.setFillColor(Color.DKGRAY);
         }
+        ArrayList<ILineDataSet> dataSets = new ArrayList<>();
+        dataSets.add(currencyDataSet);
+        LineData data = new LineData(dataSets);
+        chart.setData(data);
     }
 }
