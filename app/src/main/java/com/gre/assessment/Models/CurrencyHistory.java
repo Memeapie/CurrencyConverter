@@ -1,5 +1,7 @@
 package com.gre.assessment.Models;
 
+import java.util.List;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -8,20 +10,23 @@ import lombok.NoArgsConstructor;
 
 @Data
 @Builder
-@AllArgsConstructor
 @NoArgsConstructor
+@AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
-public class CurrencyConvert extends IOErrorReadOut {
+public class CurrencyHistory extends IOErrorReadOut {
 
-    private Double fromRate;
-    private Double toRate;
     private String fromCurrency;
     private String toCurrency;
     private String fromCurrencyCode;
     private String toCurrencyCode;
+    private String startDate;
+    private String endDate;
 
-    public CurrencyConvert(String error){
+    List<CurrencyConvertListedItem> currencyRates;
+
+    public CurrencyHistory(String error){
         super();
         this.setErrorOut(error);
     }
+
 }

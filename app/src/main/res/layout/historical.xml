@@ -28,12 +28,14 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <com.github.mikephil.charting.charts.LineChart
-        android:id="@+id/chart1"
-        android:layout_width="410dp"
-        android:layout_height="410dp"
+        android:id="@+id/historicalDataChart"
+        android:layout_width="388dp"
+        android:layout_height="452dp"
+        android:layout_marginStart="5dp"
         android:layout_marginTop="124dp"
+        android:layout_marginEnd="5dp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintHorizontal_bias="0.454"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 

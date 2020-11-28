@@ -4,7 +4,13 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gre.assessment.Models.CurrencyConvert;
+import com.gre.assessment.Models.CurrencyConvertListedItem;
+import com.gre.assessment.Models.CurrencyHistory;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
 public class EUCentralBankAPIConnectorUtil {
@@ -35,19 +41,40 @@ public class EUCentralBankAPIConnectorUtil {
         }
     }
 
-    public String getHistoricalExchangeRate(String dateBegin, String dateEnd, String fromCurrency, String toCurrency) {
-        ASyncHttpsTask task = new ASyncHttpsTask();
-        task.setRequestHeaders("https://api.exchangeratesapi.io/history?start_at=" + dateBegin + "&end_at=" + dateEnd + "&base=" +
-                CountryCodeUtil.nameToCC(fromCurrency)  + "&symbols=" +
+    public CurrencyHistory getHistoricalExchangeRate(String dateBegin, String dateEnd, String fromCurrency, String toCurrency) {
+        String url = "https://api.exchangeratesapi.io/history?start_at=" + dateBegin + "&end_at=" + dateEnd + "&symbols=" +
                 CountryCodeUtil.nameToCC(fromCurrency)  + "," +
-                CountryCodeUtil.nameToCC(toCurrency) , "GET");
+                CountryCodeUtil.nameToCC(toCurrency) + "&base=" +
+                CountryCodeUtil.nameToCC(fromCurrency);
+        ASyncHttpsTask task = new ASyncHttpsTask();
+        task.setRequestHeaders(url, "GET");
         try {
             task.execute().get();
-            ObjectMapper mapper = new ObjectMapper();
-            JsonNode resultJson = mapper.readTree(task.getResult());
-        } catch (ExecutionException | InterruptedException | JsonProcessingException e) {
-            return "Could not connect to API";
+            final JsonNode resultJson = mapper.readTree(task.getResult());
+            final JsonNode ratesJson = resultJson.path("rates");
+            List<CurrencyConvertListedItem> rates = new ArrayList<>();
+            for (Iterator<Map.Entry<String, JsonNode>> it = ratesJson.fields(); it.hasNext(); ) {
+                Map.Entry<String, JsonNode> localNode = it.next();
+                final CurrencyConvertListedItem currencyConvert = CurrencyConvertListedItem.builder()
+                        .fromRate(Double.valueOf(localNode.getValue().get(CountryCodeUtil.nameToCC(fromCurrency)).asText()))
+                        .toRate(Double.valueOf(localNode.getValue().get(CountryCodeUtil.nameToCC(toCurrency)).asText()))
+                        .date(localNode.getKey())
+                        .build();
+                rates.add(currencyConvert);
+            }
+            return CurrencyHistory.builder()
+                    .currencyRates(rates)
+                    .fromCurrency(fromCurrency)
+                    .toCurrency(toCurrency)
+                    .fromCurrencyCode(CountryCodeUtil.nameToCC(fromCurrency))
+                    .toCurrencyCode(CountryCodeUtil.nameToCC(toCurrency))
+                    .startDate(dateBegin)
+                    .endDate(dateEnd)
+                    .build();
+        } catch (ExecutionException | InterruptedException e) {
+            return new CurrencyHistory("IO Error when Connecting to EU CB API");
+        } catch (JsonProcessingException e) {
+            return new CurrencyHistory("Error when Reading Response from EU CB API");
         }
-        return task.getResult();
     }
 }

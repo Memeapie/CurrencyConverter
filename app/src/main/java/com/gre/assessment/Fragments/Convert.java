@@ -52,10 +52,15 @@ public class Convert extends Fragment {
                             fromCurrency.getSelectedItem().toString(),
                             toCurrency.getSelectedItem().toString()
                     );
-                    // TODO: Add Error Handling
-                    final String convertedAmount = decimalFormatter.format(amountClean.get()*convert.getToRate());
-                    outputConversionRate.setText("Today's Conversion Rate is " + decimalFormatter.format(convert.getToRate()));
-                    outputConversionAmount.setText(amountClean.get() + " " + convert.getFromCurrencyCode() + " currently converts to " + convertedAmount + " " + convert.getToCurrencyCode());
+                    Optional<String> errorOut = Optional.ofNullable(convert.getErrorOut());
+                    if (errorOut.isPresent()){
+                        Snackbar.make(view, errorOut.get(), Snackbar.LENGTH_LONG)
+                                .setAction("Action", null).show();
+                    } else {
+                        final String convertedAmount = decimalFormatter.format(amountClean.get() * convert.getToRate());
+                        outputConversionRate.setText("Today's Conversion Rate is " + decimalFormatter.format(convert.getToRate()));
+                        outputConversionAmount.setText(amountClean.get() + " " + convert.getFromCurrencyCode() + " currently converts to " + convertedAmount + " " + convert.getToCurrencyCode());
+                    }
                 }
             }
         });
